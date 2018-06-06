@@ -49,6 +49,13 @@
 - [#4316](https://github.com/influxdata/telegraf/issues/4316): Fix incorrect precision being applied to metric in http_listener.
 
 ## v1.7 [2018-06-12]
+## v1.8 [unreleased]
+
+### Features
+
+- [#4236](https://github.com/influxdata/telegraf/pull/4236): Add SSL/TLS support to redis input.
+
+## v1.7 [unreleased]
 
 ### Release Notes
 
