@@ -87,7 +87,7 @@
 
 ### New Serializers
 
-- [splunkmetric](/plugins/serializer/splunkmetric/README.md) - Contributed by @ronnocol
+- [splunkmetric](/plugins/serializers/splunkmetric/README.md) - Contributed by @ronnocol
 
 ### Features
 
