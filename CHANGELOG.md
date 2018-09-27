@@ -50,6 +50,12 @@
 
 ## v1.7 [2018-06-12]
 ## v1.8 [unreleased]
+## v1.9 [unreleased]
+
+### Features
+
+- [#4686](https://github.com/influxdata/telegraf/pull/4686): Add replace function to strings processor.
+
 ## v1.8.1 [unreleased]
 
 ### Bugfixes
