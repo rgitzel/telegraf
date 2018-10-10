@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -310,6 +312,74 @@ func (a *Accumulator) AssertDoesNotContainsTaggedFields(
 		}
 	}
 	return
+}
+
+func NormalizeStringMap(m map[string]string) string {
+    list := []string{}
+    for key, value := range m {
+        list = append(list, fmt.Sprintf("%s='%s'", key, value))
+    }
+    sort.Strings(list)
+    return strings.Join(list[:], ", ")
+}
+
+func NormalizeInterfaceMap(m map[string]interface{}) string {
+    list := []string{}
+    for key, value := range m {
+        list = append(list, fmt.Sprintf("%s='%s'", key, value))
+    }
+    sort.Strings(list)
+    return strings.Join(list[:], ", ")
+}
+
+func (m *Metric) Normalized() string {
+    return fmt.Sprintf("%s, [%s], [%s], %d", m.Measurement, NormalizeStringMap(m.Tags), NormalizeInterfaceMap(m.Fields), m.Time.Unix())
+}
+
+func (a *Accumulator) NormalizedContents() []string {
+    list := []string{}
+    for _, m := range a.Metrics {
+        list = append(list, m.Normalized())
+    }
+    return list
+}
+
+func Contains(list []string, s string) bool {
+    for _, candidate := range list {
+        if candidate == s {
+            return true
+        }
+    }
+    return false
+}
+
+func (a *Accumulator) Contains(m *Metric) bool {
+    return Contains(a.NormalizedContents(), m.Normalized())
+}
+
+
+
+func (a *Accumulator) AssertContainsMeasurement(
+	t *testing.T,
+	measurement string,
+	fields map[string]interface{},
+	tags map[string]string,
+	timestamp time.Time,
+) {
+	a.Lock()
+	defer a.Unlock()
+
+    if len(a.Metrics) == 0 {
+        assert.Fail(t, "accumulator is empty")
+    } else {
+        n := Metric{measurement, tags, fields, timestamp}
+        if a.Contains(&n) {
+            return
+        }
+        metricsString := strings.Join(a.NormalizedContents()[:], "\n")
+        msg := fmt.Sprintf("measurement '%s' not found in the accumulator:\n%s", n.Normalized(), metricsString)
+        assert.Fail(t, msg)
+    }
 }
 
 func (a *Accumulator) AssertContainsFields(
