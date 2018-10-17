@@ -122,9 +122,9 @@ func (a *Accumulator) AddFields(
 
 	p := &Metric{
 		Measurement: measurement,
-		Fields:	  fields,
-		Tags:		tagsCopy,
-		Time:		t,
+		Fields:      fields,
+		Tags:        tagsCopy,
+		Time:        t,
 	}
 
 	a.Metrics = append(a.Metrics, p)

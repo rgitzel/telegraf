@@ -1,8 +1,11 @@
-# github webhooks
+# Rainforest webhooks
 
-You should configure your Organization's Webhooks to point at the `webhooks` service. To do this go to `github.com/{my_organization}` and click `Settings > Webhooks > Add webhook`. In the resulting menu set `Payload URL` to `http://<my_ip>:1619/github`, `Content type` to `application/json` and under the section `Which events would you like to trigger this webhook?` select 'Send me <b>everything</b>'. By default all of the events will write to the `github_webhooks` measurement, this is configurable by setting the `measurement_name` in the config file.
+This plugin allows Telegraf to receive messages uploaded by a
+[Rainforest Eagle 200](https://rainforestautomation.com/rfa-z114-eagle-200-2/)
+energy monitoring gateway.
 
-You can also add a secret that will be used by telegraf to verify the authenticity of the requests.
+
+
 
 ## Events
 
