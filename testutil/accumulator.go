@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -23,7 +24,7 @@ type Metric struct {
 }
 
 func (p *Metric) String() string {
-	return fmt.Sprintf("%s %v", p.Measurement, p.Fields)
+	return fmt.Sprintf("%s %v %v %d", p.Measurement, p.Fields, p.Tags, p.Time.Unix())
 }
 
 // Accumulator defines a mocked out accumulator
@@ -35,7 +36,15 @@ type Accumulator struct {
 	nMetrics uint64
 	Discard  bool
 	Errors   []error
-	debug    bool
+	debug	bool
+}
+
+func (a *Accumulator) Strings() []string {
+	list := []string{}
+	for _, m := range a.Metrics {
+		list = append(list, m.String())
+	}
+	return list
 }
 
 func (a *Accumulator) NMetrics() uint64 {
@@ -54,6 +63,15 @@ func (a *Accumulator) ClearMetrics() {
 	defer a.Unlock()
 	atomic.StoreUint64(&a.nMetrics, 0)
 	a.Metrics = make([]*Metric, 0)
+}
+
+func (a *Accumulator) Contains(m *Metric) bool {
+	for _, candidate := range a.Metrics {
+		if reflect.DeepEqual(candidate, m) {
+			return true
+		}
+	}
+	return false
 }
 
 // AddFields adds a measurement point with a specified timestamp.
@@ -104,9 +122,9 @@ func (a *Accumulator) AddFields(
 
 	p := &Metric{
 		Measurement: measurement,
-		Fields:      fields,
-		Tags:        tagsCopy,
-		Time:        t,
+		Fields:	  fields,
+		Tags:		tagsCopy,
+		Time:		t,
 	}
 
 	a.Metrics = append(a.Metrics, p)
@@ -310,6 +328,36 @@ func (a *Accumulator) AssertDoesNotContainsTaggedFields(
 		}
 	}
 	return
+}
+
+func (a *Accumulator) AssertMeasurementsCount(t *testing.T, expectedCount int) {
+	a.Lock()
+	defer a.Unlock()
+
+	assert.Equal(t, expectedCount, len(a.Metrics))
+}
+
+func (a *Accumulator) AssertContainsMeasurement(
+	t *testing.T,
+	measurement string,
+	fields map[string]interface{},
+	tags map[string]string,
+	timestamp time.Time,
+) {
+	a.Lock()
+	defer a.Unlock()
+
+	if len(a.Metrics) == 0 {
+		assert.Fail(t, "accumulator is empty")
+	} else {
+		n := Metric{measurement, tags, fields, timestamp}
+		if a.Contains(&n) {
+			return
+		}
+		accumulatorString := strings.Join(a.Strings()[:], "\n")
+		msg := fmt.Sprintf("measurement '%s' not found in the accumulator:\n%s", n.String(), accumulatorString)
+		assert.Fail(t, msg)
+	}
 }
 
 func (a *Accumulator) AssertContainsFields(
