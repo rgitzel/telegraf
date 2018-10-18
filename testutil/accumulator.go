@@ -36,7 +36,7 @@ type Accumulator struct {
 	nMetrics uint64
 	Discard  bool
 	Errors   []error
-	debug	bool
+	debug    bool
 }
 
 func (a *Accumulator) Strings() []string {
