@@ -25,13 +25,13 @@ type Metric struct {
 }
 
 func (m *Metric) String() string {
-    return m.InfluxDbString()
+	return fmt.Sprintf("%s %v", p.Measurement, p.Fields)
 }
 
 func (m *Metric) InfluxDbString() string {
-    serializer, _ := serializers.NewInfluxSerializer()
-    output, _ := serializer.Serialize(MustMetric(m.Measurement, m.Tags, m.Fields, m.Time))
-    return strings.TrimSpace(string(output))
+	serializer, _ := serializers.NewInfluxSerializer()
+	output, _ := serializer.Serialize(MustMetric(m.Measurement, m.Tags, m.Fields, m.Time))
+	return strings.TrimSpace(string(output))
 }
 
 // Accumulator defines a mocked out accumulator
@@ -356,14 +356,14 @@ func (a *Accumulator) AssertContainsMeasurement(
 
 		// it's not here! build a detailed error message including the list of
 		//  measurements that *are* here (so you can see what's different)
-        bulletedStrings := []string{}
-        for _, m := range a.Metrics {
-            bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", m.InfluxDbString()))
-        }
+		bulletedStrings := []string{}
+		for _, m := range a.Metrics {
+			bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", m.InfluxDbString()))
+		}
 		msg := fmt.Sprintf("measurement '%s' was not found\nthe accumulator contains %d measurement(s):\n%s",
-		    n.String(),
-		    len(bulletedStrings),
-		    strings.Join(bulletedStrings[:], "\n"),
+			n.String(),
+			len(bulletedStrings),
+			strings.Join(bulletedStrings[:], "\n"),
 		)
 		assert.Fail(t, msg)
 	}
