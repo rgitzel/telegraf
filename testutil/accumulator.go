@@ -46,14 +46,6 @@ type Accumulator struct {
 	debug    bool
 }
 
-func (a *Accumulator) Strings() []string {
-	list := []string{}
-	for _, m := range a.Metrics {
-		list = append(list, m.String())
-	}
-	return list
-}
-
 func (a *Accumulator) NMetrics() uint64 {
 	return atomic.LoadUint64(&a.nMetrics)
 }
@@ -365,8 +357,8 @@ func (a *Accumulator) AssertContainsMeasurement(
 		// it's not here! build a detailed error message including the list of
 		//  measurements that *are* here (so you can see what's different)
         bulletedStrings := []string{}
-        for _, s := range a.Strings() {
-            bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", s))
+        for _, m := range a.Metrics {
+            bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", m.InfluxDbString()))
         }
 		msg := fmt.Sprintf("measurement '%s' was not found\nthe accumulator contains %d measurement(s):\n%s",
 		    n.String(),

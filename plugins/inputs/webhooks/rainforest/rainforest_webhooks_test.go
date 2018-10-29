@@ -35,7 +35,7 @@ func TestInstantaneousDemand(t *testing.T) {
         map[string]interface{}{
     		"value": "0.472",
         },
-        1539632323,
+        1539632322,
     )
 }
 
