@@ -72,6 +72,7 @@ func (wb *Webhooks) SampleConfig() string {
 
   [inputs.webhooks.rainforest]
     path = "/rainforest"
+    # name = "measurement_name"
  `
 }
 

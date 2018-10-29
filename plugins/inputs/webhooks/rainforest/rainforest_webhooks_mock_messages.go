@@ -1,5 +1,8 @@
 package rainforest
 
+/*
+ * these are real messages with fudged IDs
+ */
 
 func CurrentSummationMessageJson() string {
     return `{

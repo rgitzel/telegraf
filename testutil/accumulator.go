@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/influxdata/telegraf"
+	"github.com/influxdata/telegraf/plugins/serializers"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,8 +24,14 @@ type Metric struct {
 	Time        time.Time
 }
 
-func (p *Metric) String() string {
-	return fmt.Sprintf("%s %v %v %d", p.Measurement, p.Fields, p.Tags, p.Time.Unix())
+func (m *Metric) String() string {
+    return m.InfluxDbString()
+}
+
+func (m *Metric) InfluxDbString() string {
+    serializer, _ := serializers.NewInfluxSerializer()
+    output, _ := serializer.Serialize(MustMetric(m.Measurement, m.Tags, m.Fields, m.Time))
+    return strings.TrimSpace(string(output))
 }
 
 // Accumulator defines a mocked out accumulator
@@ -354,8 +361,18 @@ func (a *Accumulator) AssertContainsMeasurement(
 		if a.Contains(&n) {
 			return
 		}
-		accumulatorString := strings.Join(a.Strings()[:], "\n")
-		msg := fmt.Sprintf("measurement '%s' not found in the accumulator:\n%s", n.String(), accumulatorString)
+
+		// it's not here! build a detailed error message including the list of
+		//  measurements that *are* here (so you can see what's different)
+        bulletedStrings := []string{}
+        for _, s := range a.Strings() {
+            bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", s))
+        }
+		msg := fmt.Sprintf("measurement '%s' was not found\nthe accumulator contains %d measurement(s):\n%s",
+		    n.String(),
+		    len(bulletedStrings),
+		    strings.Join(bulletedStrings[:], "\n"),
+		)
 		assert.Fail(t, msg)
 	}
 }

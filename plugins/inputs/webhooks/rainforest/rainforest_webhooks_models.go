@@ -5,8 +5,8 @@ import (
 )
 
 /*
- * an envelope contains a list of messages; each message contains a block of data
- *  which is specify to the "type" of the particular message
+ * an 'envelope' contains a list of 'messages'; each message contains a block
+ *  of data specific to the "type" of the particular message
  *
  * each message has its own timestamp, and the envelope has one as well;
  *  the envelope timestamp should always be later than all of the messages' timestamps
@@ -22,6 +22,11 @@ type RainforestMessage struct {
 	Type        string              `json:"dataType"`
 	RawData	    json.RawMessage     `json:"data"`
 }
+
+/*
+ * the rest of these each match the 'body.data' node
+ *  for a particular type of message
+ */
 
 type RainforestCurrentSummationData struct {
 	Delivered   json.Number         `json:"summationDelivered"`

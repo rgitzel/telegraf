@@ -58,33 +58,34 @@ func (rw *RainforestWebhook) possiblyAddMeasurement(message *RainforestMessage) 
 
 	switch t := message.Type; t {
 		case "CurrentSummation":
-			addCurrentSummationValues(message, tags, fields)
+			addCurrentSummationValues(message.RawData, tags, fields)
 
 		case "InstantaneousDemand":
-			addInstantaneousDemandValues(message, tags, fields)
+			addInstantaneousDemandValues(message.RawData, tags, fields)
 
 		case "Message":
-			addMessageValues(message, tags, fields)
+			addMessageValues(message.RawData, tags, fields)
 
 		case "Price":
-			addPriceValues(message, tags, fields)
+			addPriceValues(message.RawData, tags, fields)
 
 		default:
-			addUnrecognizedMessageValues(message, tags, fields)
+			addUnknownValues(message.RawData, tags, fields)
 	}
 
 	log.Printf("processed message type '%s'", message.Type)
 
-	// I would rather set this in `Register()` but then it is over-written?
+	// I would rather set this in `Register()` but then it ends up over-written?
 	if (rw.Name == "") {
 		rw.Name = DefaultMeasurementName
 	}
+
 	rw.acc.AddFields(rw.Name, fields, tags, ts)
 }
 
-func addCurrentSummationValues(message *RainforestMessage, tags map[string]string, fields map[string]interface{}) {
+func addCurrentSummationValues(dataNode json.RawMessage, tags map[string]string, fields map[string]interface{}) {
 	var data RainforestCurrentSummationData
-	json.Unmarshal(message.RawData, &data)
+	json.Unmarshal(dataNode, &data)
 
 	tags["uom"] = data.Units
 
@@ -92,22 +93,22 @@ func addCurrentSummationValues(message *RainforestMessage, tags map[string]strin
 	fields["received"] = string(data.Received)
 }
 
-func addInstantaneousDemandValues(message *RainforestMessage, tags map[string]string, fields map[string]interface{}) {
+func addInstantaneousDemandValues(dataNode json.RawMessage, tags map[string]string, fields map[string]interface{}) {
 	var data RainforestInstantaneousDemandData
-	json.Unmarshal(message.RawData, &data)
+	json.Unmarshal(dataNode, &data)
 
 	tags["uom"] = data.Units
 
 	fields["value"] = string(data.Value)
 }
 
-func addMessageValues(message *RainforestMessage, tags map[string]string, fields map[string]interface{}) {
-	fields["content"] = cleanRawJson(message.RawData)
+func addMessageValues(dataNode json.RawMessage, tags map[string]string, fields map[string]interface{}) {
+	fields["content"] = cleanRawJson(dataNode)
 }
 
-func addPriceValues(message *RainforestMessage, tags map[string]string, fields map[string]interface{}) {
+func addPriceValues(dataNode json.RawMessage, tags map[string]string, fields map[string]interface{}) {
 	var data RainforestPriceData
-	json.Unmarshal(message.RawData, &data)
+	json.Unmarshal(dataNode, &data)
 
 	tags["currency"] = data.Currency
 	tags["units"] = data.Units
@@ -115,10 +116,10 @@ func addPriceValues(message *RainforestMessage, tags map[string]string, fields m
 	fields["price"] = string(data.Price)
 }
 
-func addUnrecognizedMessageValues(message *RainforestMessage, tags map[string]string, fields map[string]interface{}) {
+func addUnknownValues(dataNode json.RawMessage, tags map[string]string, fields map[string]interface{}) {
 	tags["type"] = "unknown"
 
-	fields["message"] = cleanRawJson(message.RawData)
+	fields["message"] = cleanRawJson(dataNode)
 }
 
 // the closest I can seem to find to getting a nice clean one-line version of a pretty JSON string :(
