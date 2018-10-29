@@ -1,23 +1,6 @@
 package rainforest
 
 
-func InstantaneousDemandMessageJson() string {
-    return `{
-              "timestamp":"1539632334000",
-              "deviceGuid":"d8d5b9aa2a",
-              "body": [{
-              "timestamp":"1539632322000",
-              "subdeviceGuid":"000780e67e73",
-              "componentId":"all",
-              "dataType":"InstantaneousDemand",
-              "data":{
-                "demand":0.472,
-                "units":"kW"
-              }}
-              ]
-            }`
-}
-
 func CurrentSummationMessageJson() string {
     return `{
               "timestamp":"1539635873000",
@@ -36,25 +19,44 @@ func CurrentSummationMessageJson() string {
             }`
 }
 
-func RegistrationSuccessfulMessageJson() string {
+func InstantaneousDemandMessageJson() string {
     return `{
-              "timestamp":"1539631913000",
+              "timestamp":"1539632334000",
               "deviceGuid":"d8d5b9aa2a",
               "body": [{
-              "timestamp":"1539631884000",
+              "timestamp":"1539632322000",
               "subdeviceGuid":"000780e67e73",
               "componentId":"all",
-              "dataType":"Message",
+              "dataType":"InstantaneousDemand",
               "data":{
-                "id": "0x00002ae0",
-                "text": "Registration Successful",
-                "priority": "Medium"
+                "demand":0.472,
+                "units":"kW"
               }}
               ]
             }`
 }
 
-function PriceMessageJson() string {
+func MessageMessageJson() string {
+    return `{
+              "timestamp":"1539631037000",
+              "deviceGuid":"d8d5b9aa2a",
+              "body": [{
+              "timestamp":"1539631003000",
+              "subdeviceGuid":"00078e67e73",
+              "componentId":"all",
+              "dataType":"Message",
+              "data":{
+                "id": "0x00002ae0",
+                "text": "Registration Successful",
+                "priority": "Medium",
+                "ConfirmationRequired": "Y",
+                "Confirmed": "N"
+              }}
+              ]
+            }`
+}
+
+func PriceMessageJson() string {
     return `{
               "timestamp":"1539630998000",
               "deviceGuid":"d8d5b9aa2a",
@@ -73,21 +75,18 @@ function PriceMessageJson() string {
 }
 
 
-function MessageMessageJson() string {
+func UnknownMessageJson() string {
     return `{
-              "timestamp":"1539631037000",
+              "timestamp":"1539630998000",
               "deviceGuid":"d8d5b9aa2a",
               "body": [{
-              "timestamp":"1539631003000",
+              "timestamp":"1539630914000",
               "subdeviceGuid":"00078e67e73",
               "componentId":"all",
-              "dataType":"Message",
+              "dataType":"Foo",
               "data":{
-                "id": "0x00002ae0",
-                "text": "Registration Successful",
-                "priority": "Medium",
-                "ConfirmationRequired": "Y",
-                "Confirmed": "N"
+                "bar": 1,
+                "baz":"boo"
               }}
               ]
             }`

@@ -6,9 +6,10 @@ import (
 
 /*
  * an envelope contains a list of messages; each message contains a block of data
+ *  which is specify to the "type" of the particular message
  *
- * each message has its own timestamp, and then the envelope has one as well,
- *  which should always be later than the message timestamps
+ * each message has its own timestamp, and the envelope has one as well;
+ *  the envelope timestamp should always be later than all of the messages' timestamps
  */
 
 type RainforestEnvelope struct {
@@ -30,5 +31,11 @@ type RainforestCurrentSummationData struct {
 
 type RainforestInstantaneousDemandData struct {
 	Value	    json.Number         `json:"demand"`
+	Units	    string              `json:"units"`
+}
+
+type RainforestPriceData struct {
+	Price	    json.Number         `json:"price"`
+	Currency    string              `json:"currency"`
 	Units	    string              `json:"units"`
 }

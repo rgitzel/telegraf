@@ -108,6 +108,7 @@ func (wb *Webhooks) Start(acc telegraf.Accumulator) error {
 	r := mux.NewRouter()
 
 	for _, webhook := range wb.AvailableWebhooks() {
+	    log.Printf("registering webhook: %s", webhook)
 		webhook.Register(r, acc)
 	}
 

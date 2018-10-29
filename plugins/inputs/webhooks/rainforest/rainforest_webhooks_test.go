@@ -10,51 +10,81 @@ import (
 	"github.com/influxdata/telegraf/testutil"
 )
 
-func TestInstantaneousDemand(t *testing.T) {
-	expectedFields := map[string]interface{}{
-		"value": "0.472",
-	}
-
-	expectedTags := map[string]string{
-		"uom": "kW",
-		"type": "InstantaneousDemand",
-	}
-
-	acc := postSuccessfulTestRequest(t, InstantaneousDemandMessageJson())
-
-	acc.AssertContainsMeasurement(t, MeasurementName, expectedFields, expectedTags, time.Unix(1539632322, 0))
+func TestCurrentSummation(t *testing.T) {
+    verifyGeneratedMeasurementFromMessage(t,
+        CurrentSummationMessageJson(),
+        map[string]interface{}{
+            "delivered": "36692.711",
+            "received": "4.01",
+        },
+        map[string]string{
+            "uom": "kWh",
+            "type": "CurrentSummation",
+        },
+        1539635859,
+    )
 }
 
-func TestCurrentSummation(t *testing.T) {
-	expectedFields := map[string]interface{}{
-		"delivered": "36692.711",
-		"received": "4.01",
-	}
+func TestInstantaneousDemand(t *testing.T) {
+    verifyGeneratedMeasurementFromMessage(t,
+        InstantaneousDemandMessageJson(),
+        map[string]interface{}{
+    		"value": "0.472",
+        },
+        map[string]string{
+            "uom": "kW",
+            "type": "InstantaneousDemand",
+        },
+        1539632322,
+    )
+}
 
-	expectedTags := map[string]string{
-		"uom": "kWh",
-		"type": "CurrentSummation",
-	}
+func TestMessage(t *testing.T) {
+    verifyGeneratedMeasurementFromMessage(t,
+        MessageMessageJson(),
+        map[string]interface{}{
+            "content": `{ "id": "0x00002ae0", "text": "Registration Successful", "priority": "Medium", "ConfirmationRequired": "Y", "Confirmed": "N" }`,
+        },
+        map[string]string{
+            "type": "Message",
+        },
+        1539631003,
+    )
+}
 
-	acc := postSuccessfulTestRequest(t, CurrentSummationMessageJson())
-
-	acc.AssertMeasurementsCount(t, 1)
-	acc.AssertContainsMeasurement(t, MeasurementName, expectedFields, expectedTags, time.Unix(1539635859, 0))
+func TestPrice(t *testing.T) {
+    verifyGeneratedMeasurementFromMessage(t,
+        PriceMessageJson(),
+        map[string]interface{}{
+    		"price": "0.0884",
+        },
+        map[string]string{
+            "currency": "0x0348",
+            "units": "USD/kWh",
+            "type": "Price",
+        },
+        1539630914,
+    )
 }
 
 
 func TestUnrecognized(t *testing.T) {
-	expectedFields := map[string]interface{}{
-		"message": "oops",//[]byte(`{'summationDelivered':36692.711,'summationReceived':4.01,'units':'kWh'}`),
-	}
+    verifyGeneratedMeasurementFromMessage(t,
+        UnknownMessageJson(),
+        map[string]interface{}{
+            "message": `{ "bar": 1, "baz":"boo" }`,
+        },
+        map[string]string{
+            "type": "unknown",
+        },
+        1539630914,
+    )
+}
 
-	expectedTags := map[string]string{
-		"type": "unknown",
-	}
+func verifyGeneratedMeasurementFromMessage(t *testing.T, message string, expectedFields map[string]interface{}, expectedTags map[string]string, expectedTimestamp int64) {
+	acc := postSuccessfulTestRequest(t, message)
 
-	acc := postSuccessfulTestRequest(t, RegistrationSuccessfulMessageJson())
-
-	acc.AssertContainsMeasurement(t, MeasurementName, expectedFields, expectedTags, time.Unix(1539631884, 0))
+	acc.AssertContainsMeasurement(t, DefaultMeasurementName, expectedFields, expectedTags, time.Unix(expectedTimestamp, 0))
 }
 
 func postSuccessfulTestRequest(t *testing.T, json string) testutil.Accumulator {
