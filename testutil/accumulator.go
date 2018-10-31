@@ -348,21 +348,21 @@ func (a *Accumulator) AssertContainsMetric(
 	a.Lock()
 	defer a.Unlock()
 
-    n := Metric{measurement, tags, fields, timestamp}
-    if a.Contains(&n) {
-        return
-    }
+	n := Metric{measurement, tags, fields, timestamp}
+	if a.Contains(&n) {
+		return
+	}
 
-    bulletedStrings := []string{}
-    for _, m := range a.Metrics {
-        bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", m.InfluxString()))
-    }
-    msg := fmt.Sprintf("metric '%s' was not found\nthe accumulator contains %d metric(s):\n%s",
-        n.InfluxString(),
-        len(bulletedStrings),
-        strings.Join(bulletedStrings[:], "\n"),
-    )
-    assert.Fail(t, msg)
+	bulletedStrings := []string{}
+	for _, m := range a.Metrics {
+		bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", m.InfluxString()))
+	}
+	msg := fmt.Sprintf("metric '%s' was not found\nthe accumulator contains %d metric(s):\n%s",
+		n.InfluxString(),
+		len(bulletedStrings),
+		strings.Join(bulletedStrings[:], "\n"),
+	)
+	assert.Fail(t, msg)
 }
 
 func (a *Accumulator) AssertContainsFields(
