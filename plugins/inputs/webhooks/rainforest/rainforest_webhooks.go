@@ -89,8 +89,8 @@ func addCurrentSummationValues(dataNode json.RawMessage, tags map[string]string,
 
 	tags["uom"] = data.Units
 
-	fields["delivered"] = string(data.Delivered)
-	fields["received"] = string(data.Received)
+	fields["delivered"], _ = data.Delivered.Float64()
+	fields["received"], _ = data.Received.Float64()
 }
 
 func addInstantaneousDemandValues(dataNode json.RawMessage, tags map[string]string, fields map[string]interface{}) {
@@ -99,7 +99,7 @@ func addInstantaneousDemandValues(dataNode json.RawMessage, tags map[string]stri
 
 	tags["uom"] = data.Units
 
-	fields["value"] = string(data.Value)
+	fields["value"], _ = data.Value.Float64()
 }
 
 func addMessageValues(dataNode json.RawMessage, tags map[string]string, fields map[string]interface{}) {
@@ -113,7 +113,7 @@ func addPriceValues(dataNode json.RawMessage, tags map[string]string, fields map
 	tags["currency"] = data.Currency
 	tags["units"] = data.Units
 
-	fields["price"] = string(data.Price)
+	fields["price"], _ = data.Price.Float64()
 }
 
 func addUnknownValues(dataNode json.RawMessage, tags map[string]string, fields map[string]interface{}) {

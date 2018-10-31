@@ -11,36 +11,36 @@ import (
 )
 
 func TestCurrentSummation(t *testing.T) {
-    verifyGeneratedMeasurementFromMessage(t,
+    verifyGeneratedMetricFromMessage(t,
         CurrentSummationMessageJson(),
         map[string]string{
             "uom": "kWh",
             "type": "CurrentSummation",
         },
         map[string]interface{}{
-            "delivered": "36692.711",
-            "received": "4.01",
+            "delivered": 36692.711,
+            "received": 4.01,
         },
         1539635859,
     )
 }
 
 func TestInstantaneousDemand(t *testing.T) {
-    verifyGeneratedMeasurementFromMessage(t,
+    verifyGeneratedMetricFromMessage(t,
         InstantaneousDemandMessageJson(),
         map[string]string{
             "uom": "kW",
             "type": "InstantaneousDemand",
         },
         map[string]interface{}{
-    		"value": "0.472",
+    		"value": 0.472,
         },
         1539632322,
     )
 }
 
 func TestMessage(t *testing.T) {
-    verifyGeneratedMeasurementFromMessage(t,
+    verifyGeneratedMetricFromMessage(t,
         MessageMessageJson(),
         map[string]string{
             "type": "Message",
@@ -53,7 +53,7 @@ func TestMessage(t *testing.T) {
 }
 
 func TestPrice(t *testing.T) {
-    verifyGeneratedMeasurementFromMessage(t,
+    verifyGeneratedMetricFromMessage(t,
         PriceMessageJson(),
         map[string]string{
             "currency": "0x0348",
@@ -61,7 +61,7 @@ func TestPrice(t *testing.T) {
             "type": "Price",
         },
         map[string]interface{}{
-    		"price": "0.0884",
+    		"price": 0.0884,
         },
         1539630914,
     )
@@ -69,7 +69,7 @@ func TestPrice(t *testing.T) {
 
 
 func TestUnrecognized(t *testing.T) {
-    verifyGeneratedMeasurementFromMessage(t,
+    verifyGeneratedMetricFromMessage(t,
         UnknownMessageJson(),
         map[string]string{
             "type": "unknown",
@@ -81,20 +81,20 @@ func TestUnrecognized(t *testing.T) {
     )
 }
 
-func verifyGeneratedMeasurementFromMessage(t *testing.T, message string, expectedTags map[string]string, expectedFields map[string]interface{}, expectedTimestamp int64) {
+func verifyGeneratedMetricFromMessage(t *testing.T, message string, expectedTags map[string]string, expectedFields map[string]interface{}, expectedTimestamp int64) {
 	acc := postSuccessfulTestRequest(t, message)
 
-	acc.AssertContainsMeasurement(t, DefaultMeasurementName, expectedFields, expectedTags, time.Unix(expectedTimestamp, 0))
+    acc.AssertMetricsCount(t, 1)
+	acc.AssertContainsMetric(t, DefaultMeasurementName, expectedFields, expectedTags, time.Unix(expectedTimestamp, 0))
 }
 
 func postSuccessfulTestRequest(t *testing.T, json string) testutil.Accumulator {
-
-	req, _ := http.NewRequest("POST", "/rainforest", strings.NewReader(json))
+	w := httptest.NewRecorder()
 
 	var acc testutil.Accumulator
 	wh := &RainforestWebhook{acc: &acc}
 
-	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/rainforest", strings.NewReader(json))
 	wh.eventHandler(w, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("POST returned HTTP status code %v.\nExpected %v", w.Code, http.StatusOK)

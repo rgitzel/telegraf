@@ -24,11 +24,11 @@ type Metric struct {
 	Time        time.Time
 }
 
-func (m *Metric) String() string {
+func (p *Metric) String() string {
 	return fmt.Sprintf("%s %v", p.Measurement, p.Fields)
 }
 
-func (m *Metric) InfluxDbString() string {
+func (m *Metric) InfluxString() string {
 	serializer, _ := serializers.NewInfluxSerializer()
 	output, _ := serializer.Serialize(MustMetric(m.Measurement, m.Tags, m.Fields, m.Time))
 	return strings.TrimSpace(string(output))
@@ -329,14 +329,16 @@ func (a *Accumulator) AssertDoesNotContainsTaggedFields(
 	return
 }
 
-func (a *Accumulator) AssertMeasurementsCount(t *testing.T, expectedCount int) {
+func (a *Accumulator) AssertMetricsCount(t *testing.T, expectedCount int) {
 	a.Lock()
 	defer a.Unlock()
 
 	assert.Equal(t, expectedCount, len(a.Metrics))
 }
 
-func (a *Accumulator) AssertContainsMeasurement(
+// if the metric is not found, don't just fail, instead build a detailed error message,
+//  including the list of metrics that *are* here, so that you can see what's different
+func (a *Accumulator) AssertContainsMetric(
 	t *testing.T,
 	measurement string,
 	fields map[string]interface{},
@@ -346,27 +348,21 @@ func (a *Accumulator) AssertContainsMeasurement(
 	a.Lock()
 	defer a.Unlock()
 
-	if len(a.Metrics) == 0 {
-		assert.Fail(t, "accumulator is empty")
-	} else {
-		n := Metric{measurement, tags, fields, timestamp}
-		if a.Contains(&n) {
-			return
-		}
+    n := Metric{measurement, tags, fields, timestamp}
+    if a.Contains(&n) {
+        return
+    }
 
-		// it's not here! build a detailed error message including the list of
-		//  measurements that *are* here (so you can see what's different)
-		bulletedStrings := []string{}
-		for _, m := range a.Metrics {
-			bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", m.InfluxDbString()))
-		}
-		msg := fmt.Sprintf("measurement '%s' was not found\nthe accumulator contains %d measurement(s):\n%s",
-			n.String(),
-			len(bulletedStrings),
-			strings.Join(bulletedStrings[:], "\n"),
-		)
-		assert.Fail(t, msg)
-	}
+    bulletedStrings := []string{}
+    for _, m := range a.Metrics {
+        bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", m.InfluxString()))
+    }
+    msg := fmt.Sprintf("metric '%s' was not found\nthe accumulator contains %d metric(s):\n%s",
+        n.InfluxString(),
+        len(bulletedStrings),
+        strings.Join(bulletedStrings[:], "\n"),
+    )
+    assert.Fail(t, msg)
 }
 
 func (a *Accumulator) AssertContainsFields(
