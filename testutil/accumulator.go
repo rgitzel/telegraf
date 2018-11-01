@@ -338,18 +338,11 @@ func (a *Accumulator) AssertMetricsCount(t *testing.T, expectedCount int) {
 
 // if the metric is not found, don't just fail, instead build a detailed error message,
 //  including the list of metrics that *are* here, so that you can see what's different
-func (a *Accumulator) AssertContainsMetric(
-	t *testing.T,
-	measurement string,
-	fields map[string]interface{},
-	tags map[string]string,
-	timestamp time.Time,
-) {
+func (a *Accumulator) AssertContainsMetric(t *testing.T, expected Metric) {
 	a.Lock()
 	defer a.Unlock()
 
-	n := Metric{measurement, tags, fields, timestamp}
-	if a.Contains(&n) {
+	if a.Contains(&expected) {
 		return
 	}
 
@@ -358,7 +351,7 @@ func (a *Accumulator) AssertContainsMetric(
 		bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", m.InfluxString()))
 	}
 	msg := fmt.Sprintf("metric '%s' was not found\nthe accumulator contains %d metric(s):\n%s",
-		n.InfluxString(),
+		expected.InfluxString(),
 		len(bulletedStrings),
 		strings.Join(bulletedStrings[:], "\n"),
 	)
