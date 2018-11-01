@@ -11,7 +11,7 @@ import (
 )
 
 func TestCurrentSummation(t *testing.T) {
-    verifyGeneratedMetricFromMessage(t,
+    verifySingleMetricGenerated(t,
         CurrentSummationMessageJson(),
         mockMetric(
             map[string]string{
@@ -28,7 +28,7 @@ func TestCurrentSummation(t *testing.T) {
 }
 
 func TestInstantaneousDemand(t *testing.T) {
-    verifyGeneratedMetricFromMessage(t,
+    verifySingleMetricGenerated(t,
         InstantaneousDemandMessageJson(),
         mockMetric(
             map[string]string{
@@ -44,7 +44,7 @@ func TestInstantaneousDemand(t *testing.T) {
 }
 
 func TestMessage(t *testing.T) {
-    verifyGeneratedMetricFromMessage(t,
+    verifySingleMetricGenerated(t,
         MessageMessageJson(),
         mockMetric(
             map[string]string{
@@ -59,7 +59,7 @@ func TestMessage(t *testing.T) {
 }
 
 func TestPrice(t *testing.T) {
-    verifyGeneratedMetricFromMessage(t,
+    verifySingleMetricGenerated(t,
         PriceMessageJson(),
         mockMetric(
             map[string]string{
@@ -77,7 +77,7 @@ func TestPrice(t *testing.T) {
 
 
 func TestValidButUnrecognized(t *testing.T) {
-    verifyGeneratedMetricFromMessage(t,
+    verifySingleMetricGenerated(t,
         ValidButUnrecognizedMessageJson(),
         mockMetric(
             map[string]string{
@@ -91,19 +91,74 @@ func TestValidButUnrecognized(t *testing.T) {
     )
 }
 
-func mockMetric(expectedTags map[string]string, expectedFields map[string]interface{}, expectedMillis int64) testutil.Metric {
-    return testutil.Metric{DefaultMeasurementName, expectedTags, expectedFields, time.Unix(expectedMillis, 0)}
+
+func TestNone(t *testing.T) {
+    verifyNoMetricsGenerated(t, EmptyMessagesListJson())
 }
 
-func verifyGeneratedMetricFromMessage(t *testing.T, message string, metric testutil.Metric) {
-    verifyGeneratedMetricsFromMessage(t, message, []testutil.Metric{metric})
+func TestMultiple(t *testing.T) {
+    verifyMultipleMetricsGenerated(t,
+        MultipleMessagesJson(),
+        []*testutil.Metric{
+            mockMetric(
+                map[string]string{
+                    "uom": "kW",
+                    "type": "InstantaneousDemand",
+                },
+                map[string]interface{}{
+                    "value": 0.2,
+                },
+                1539632324,
+            ),
+            mockMetric(
+                map[string]string{
+                    "uom": "kW",
+                    "type": "InstantaneousDemand",
+                },
+                map[string]interface{}{
+                    "value": 0.472,
+                },
+                1539632322,
+            ),
+            mockMetric(
+                map[string]string{
+                    "uom": "kWh",
+                    "type": "CurrentSummation",
+                },
+                map[string]interface{}{
+                    "delivered": 36692.711,
+                    "received": 4.01,
+                },
+                153963589,
+            ),
+        },
+    )
 }
 
-func verifyGeneratedMetricsFromMessage(t *testing.T, message string, metrics []testutil.Metric) {
+
+func TestNotJson(t *testing.T) {
+    verifyNoMetricsGenerated(t, "lkasjdlf sdlfaksdf")
+}
+
+func TestJsonNotEnvelope(t *testing.T) {
+    verifyNoMetricsGenerated(t, `{"foo": 1}`)
+}
+
+func mockMetric(expectedTags map[string]string, expectedFields map[string]interface{}, expectedMillis int64) *testutil.Metric {
+    return &testutil.Metric{DefaultMeasurementName, expectedTags, expectedFields, time.Unix(expectedMillis, 0)}
+}
+
+func verifyNoMetricsGenerated(t *testing.T, message string) {
+    verifyMultipleMetricsGenerated(t, message, []*testutil.Metric{})
+}
+
+func verifySingleMetricGenerated(t *testing.T, message string, metric *testutil.Metric) {
+    verifyMultipleMetricsGenerated(t, message, []*testutil.Metric{metric})
+}
+
+func verifyMultipleMetricsGenerated(t *testing.T, message string, metrics []*testutil.Metric) {
 	acc := postSuccessfulTestRequest(t, message)
-
-    acc.AssertMetricsCount(t, len(metrics))
-	acc.AssertContainsMetric(t, metrics[0])
+	acc.AssertContainsMetrics(t, metrics)
 }
 
 func postSuccessfulTestRequest(t *testing.T, json string) testutil.Accumulator {

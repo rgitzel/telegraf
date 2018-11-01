@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -336,26 +337,28 @@ func (a *Accumulator) AssertMetricsCount(t *testing.T, expectedCount int) {
 	assert.Equal(t, expectedCount, len(a.Metrics))
 }
 
-// if the metric is not found, don't just fail, instead build a detailed error message,
-//  including the list of metrics that *are* here, so that you can see what's different
-func (a *Accumulator) AssertContainsMetric(t *testing.T, expected Metric) {
+func sortedAndBulletedMetrics(metrics []*Metric) string {
+	list := []string{}
+	for _, m := range metrics {
+		list = append(list, fmt.Sprintf(" - '%s'", m.InfluxString()))
+	}
+	sort.Strings(list)
+	return strings.Join(list[:], "\n")
+}
+
+// if the metrics do not match, don't just fail, but instead build a detailed error message,
+//  including both lists of metrics, so that you can more easily see what's different
+func (a *Accumulator) AssertContainsMetrics(t *testing.T, expectedMetrics []*Metric) {
 	a.Lock()
 	defer a.Unlock()
 
-	if a.Contains(&expected) {
-		return
-	}
+	// building a string of each list should be equivalent to comparing the lists themselves,
+	//  and it has simpler failure output than `assert.ElementsMatch()`
+	expected := sortedAndBulletedMetrics(expectedMetrics)
+	found := sortedAndBulletedMetrics(a.Metrics)
 
-	bulletedStrings := []string{}
-	for _, m := range a.Metrics {
-		bulletedStrings = append(bulletedStrings, fmt.Sprintf(" - '%s'", m.InfluxString()))
-	}
-	msg := fmt.Sprintf("metric '%s' was not found\nthe accumulator contains %d metric(s):\n%s",
-		expected.InfluxString(),
-		len(bulletedStrings),
-		strings.Join(bulletedStrings[:], "\n"),
-	)
-	assert.Fail(t, msg)
+ 	msg := fmt.Sprintf("expected metrics:\n%s\nbut accumulator contains metrics:\n%s", expected, found)
+	assert.True(t, expected == found, msg)
 }
 
 func (a *Accumulator) AssertContainsFields(

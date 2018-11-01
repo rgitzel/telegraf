@@ -105,6 +105,16 @@ func ValidButUnrecognizedMessageJson() string {
             }`
 }
 
+
+func EmptyMessagesListJson() string {
+    return `{
+              "timestamp": "1539632334000",
+              "deviceGuid": "d8d5b9aa2a",
+              "body": [
+              ]
+            }`
+}
+
 func MultipleMessagesJson() string {
     return `{
               "timestamp": "1539632334000",
