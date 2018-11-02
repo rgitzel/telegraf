@@ -111,15 +111,15 @@ func addPriceValues(dataNode json.RawMessage, tags map[string]string, fields map
 	json.Unmarshal(dataNode, &data)
 
 	tags["currency"] = data.Currency
-	tags["units"] = data.Units
+	tags["uom"] = data.Units
 
-	fields["price"], _ = data.Price.Float64()
+	fields["value"], _ = data.Price.Float64()
 }
 
 func addUnknownValues(dataNode json.RawMessage, tags map[string]string, fields map[string]interface{}) {
-	tags["type"] = "unknown"
+	tags["type"] = "Unrecognized"
 
-	fields["message"] = cleanRawJson(dataNode)
+	fields["content"] = cleanRawJson(dataNode)
 }
 
 // the closest I can seem to find to getting a nice clean one-line version of a pretty JSON string :(

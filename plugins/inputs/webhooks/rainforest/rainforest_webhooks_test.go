@@ -64,11 +64,11 @@ func TestPrice(t *testing.T) {
         mockMetric(
             map[string]string{
                 "currency": "0x0348",
-                "units": "USD/kWh",
+                "uom": "USD/kWh",
                 "type": "Price",
             },
             map[string]interface{}{
-                "price": 0.0884,
+                "value": 0.0884,
             },
             1539630914,
         ),
@@ -81,10 +81,10 @@ func TestValidButUnrecognized(t *testing.T) {
         ValidButUnrecognizedMessageJson(),
         mockMetric(
             map[string]string{
-                "type": "unknown",
+                "type": "Unrecognized",
             },
             map[string]interface{}{
-                "message": `{ "bar": 1, "baz": "boo" }`,
+                "content": `{ "bar": 1, "baz": "boo" }`,
             },
             1539630914,
         ),
@@ -129,7 +129,7 @@ func TestMultiple(t *testing.T) {
                     "delivered": 36692.711,
                     "received": 4.01,
                 },
-                153963589,
+                1539635859,
             ),
         },
     )
